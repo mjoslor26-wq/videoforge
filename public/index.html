@@ -3,41 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VideoForge – Online Video Generator</title>
+    <title>VideoForge – Chatterbox-Turbo + Pexels</title>
     <style>
-        /* (same CSS as before – no changes) */
-        :root { /* … */ }
+        :root {
+            --bg: #0a0a0f; --surface: #12121a; --gold: #f0b90b;
+            --accent: #6c5ce7; --text: #e8e8f0; --text2: #b0b0c0; --border: #2a2a3a;
+            --radius: 14px; --font: 'Segoe UI', system-ui, sans-serif;
+        }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { background:#0a0a0f; color:#e8e8f0; font-family:'Segoe UI',sans-serif; padding:20px; display:flex; justify-content:center; }
+        body { background:var(--bg); color:var(--text); font-family:var(--font); padding:20px; display:flex; justify-content:center; }
         .app { max-width:900px; width:100%; }
-        .card { background:#12121a; border:1px solid #2a2a3a; border-radius:16px; padding:28px 30px; margin-bottom:24px; }
-        h1 { font-size:2.4rem; background:linear-gradient(135deg,#f0b90b,#f7dc6f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
-        .sub { color:#b0b0c0; margin-bottom:20px; }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px 30px; margin-bottom:24px; box-shadow:0 20px 50px rgba(0,0,0,0.6); }
+        h1 { font-size:2.4rem; background:linear-gradient(135deg, var(--gold), #f7dc6f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+        .sub { color:var(--text2); margin-bottom:20px; }
         .input-group { margin:16px 0; }
-        label { display:block; margin-bottom:6px; font-weight:600; font-size:0.9rem; color:#b0b0c0; }
-        input, select { width:100%; padding:14px 16px; background:#1a1a2e; border:2px solid #2a2a3a; border-radius:10px; color:white; font-size:1rem; outline:none; }
-        input:focus, select:focus { border-color:#6c5ce7; }
-        button { background:linear-gradient(135deg,#f0b90b,#f7dc6f); color:#1a1a00; border:none; border-radius:10px; padding:16px 32px; font-weight:700; font-size:1rem; cursor:pointer; width:100%; margin-top:10px; }
+        label { display:block; margin-bottom:6px; font-weight:600; font-size:0.9rem; color:var(--text2); }
+        input, select { width:100%; padding:14px 16px; background:#1a1a2e; border:2px solid var(--border); border-radius:10px; color:white; font-size:1rem; outline:none; }
+        input:focus, select:focus { border-color:var(--accent); }
+        button { background:linear-gradient(135deg, var(--gold), #f7dc6f); color:#1a1a00; border:none; border-radius:10px; padding:16px 32px; font-weight:700; font-size:1rem; cursor:pointer; width:100%; margin-top:10px; }
         button:disabled { opacity:0.6; cursor:not-allowed; }
         .progress { width:100%; height:10px; background:#2a2a3e; border-radius:10px; margin-top:12px; overflow:hidden; }
-        .progress-bar { height:100%; background:#f0b90b; width:0%; transition:width 0.1s; }
-        .status { font-size:0.9rem; color:#b0b0c0; margin-top:8px; }
-        .note { font-size:0.8rem; color:#b0b0c0; margin-top:12px; }
-        a { color:#6c5ce7; }
-        .voice-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:8px; margin-top:8px; }
+        .progress-bar { height:100%; background:var(--gold); width:0%; transition:width 0.1s; }
+        .status { font-size:0.9rem; color:var(--text2); margin-top:8px; }
+        .note { font-size:0.8rem; color:var(--text2); margin-top:12px; }
+        a { color:var(--accent); }
+        .voice-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap:8px; margin-top:8px; }
         .voice-option { background:#1a1a2e; padding:10px 6px; border-radius:8px; text-align:center; font-size:0.78rem; cursor:pointer; border:2px solid transparent; }
-        .voice-option.selected { border-color:#6c5ce7; background:#2a2a4e; }
-        .voice-id-display { font-size:0.65rem; color:#787890; word-break:break-all; margin-top:4px; }
-        .collapsible { cursor:pointer; color:#6c5ce7; font-size:0.85rem; margin-top:8px; display:inline-block; }
+        .voice-option:hover { border-color:#6c5ce7; }
+        .voice-option.selected { border-color:var(--accent); background:#2a2a4e; }
+        .voice-id-display { font-size:0.65rem; color:var(--text3); word-break:break-all; margin-top:4px; }
+        .collapsible { cursor:pointer; color:var(--accent); font-size:0.85rem; margin-top:8px; display:inline-block; }
         .hidden { display:none; }
+        .file-upload-area { border:2px dashed var(--border); border-radius:var(--radius); padding:32px; text-align:center; cursor:pointer; transition:0.2s; background:var(--surface); }
+        .file-upload-area:hover { border-color:var(--accent); background:#1a1a2e; }
+        .file-upload-area.has-file { border-color:var(--green); background:rgba(46,213,115,0.08); }
     </style>
 </head>
 <body>
 <div class="app">
     <div class="card">
         <h1>🎬 VideoForge</h1>
-        <p class="sub">Turn any topic into a real, downloadable video — using <strong>Fish Audio</strong> + <strong>Pexels</strong>.</p>
-        <p class="note">API keys are securely stored on the server.</p>
+        <p class="sub">Turn any topic into a real, downloadable video — with <strong>Chatterbox-Turbo</strong> (open-source TTS) + <strong>Pexels</strong> footage.</p>
+        <p class="note">Voice cloning: upload a 5–10 sec audio sample. Chatterbox-Turbo clones it in zero-shot — no training needed.</p>
 
         <div class="input-group">
             <label>🎯 Video Topic / Title</label>
@@ -45,26 +52,42 @@
         </div>
 
         <div class="input-group">
-            <label>🎤 Fish Audio Voice (Reference ID)</label>
-            <input type="text" id="referenceId" placeholder="Leave empty for default voice">
-            <span class="collapsible" onclick="toggleVoiceGrid()">📋 Show built-in voice presets ▼</span>
+            <label>🎤 Voice Sample Upload (WAV/MP3, 5–10 sec) — clones this voice</label>
+            <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('voiceFile').click()">
+                <div id="fileUploadText">📁 Click to upload a voice sample — or drag &amp; drop here</div>
+                <input type="file" id="voiceFile" accept="audio/wav,audio/mpeg,audio/mp3" style="display:none;" onchange="handleFileSelect(event)">
+            </div>
+            <div class="note" id="fileInfo" style="display:none;"></div>
         </div>
-        <div id="voiceGrid" class="voice-grid hidden"></div>
 
         <div class="input-group">
-            <label>⚙️ TTS Model</label>
-            <select id="modelSelect">
-                <option value="s2-pro" selected>s2-pro (recommended)</option>
-                <option value="s2">s2</option>
-                <option value="s1">s1</option>
+            <label>🎤 Or pick a preset voice (ignored if sample is uploaded)</label>
+            <select id="presetVoice">
+                <option value="">Use default (no preset)</option>
+                <option value="Andy">Andy (male)</option>
+                <option value="Abigail">Abigail (female)</option>
+                <option value="Brian">Brian (male)</option>
+                <option value="Chloe">Chloe (female)</option>
+                <option value="Ethan">Ethan (male)</option>
+                <option value="Laura">Laura (female)</option>
+                <option value="Walter">Walter (male)</option>
+                <option value="Madison">Madison (female)</option>
+            </select>
+            <div class="note">Preset voices from RunPod's Chatterbox-Turbo deployment[reference:0].</div>
+        </div>
+
+        <div class="input-group">
+            <label>⚙️ Audio Format</label>
+            <select id="formatSelect">
+                <option value="wav" selected>WAV (uncompressed, recommended)</option>
+                <option value="mp3">MP3</option>
             </select>
         </div>
+
         <div class="input-group">
-            <label>🎵 Audio Format (WAV recommended for reliability)</label>
-            <select id="formatSelect">
-                <option value="wav" selected>WAV (always works)</option>
-                <option value="mp3">MP3 (128 kbps)</option>
-            </select>
+            <label>🎭 Expressiveness (0–1)</label>
+            <input type="range" id="exaggeration" min="0" max="1" step="0.1" value="0.5">
+            <span style="font-size:0.8rem;color:var(--text2);">More expressive speech with higher values</span>
         </div>
 
         <button id="generateBtn" onclick="startGeneration()">⚡ Generate & Download Video</button>
@@ -84,49 +107,44 @@
 
 <script>
     const PROXY_URL = '/api/proxy?url=';
-    const VOICE_PRESETS = [
-        { name:"E-Girl", id:"8ef4a238714b45718ce04243307c57a7" },
-        { name:"Energetic Male", id:"7f92f8afb8ec43bf81429cc1c9199cb1" },
-        { name:"Calm Narrator", id:"a3b5f4a1c1c047b8b7d9e7f3d6a2e1c0" },
-        { name:"Deep Male", id:"9d6c4e2a1f4b47c8a3d5e7f9b1c2d3e4" },
-        { name:"Warm Female", id:"2b8c6d4e5f3a4b7c9d1e2f3a4b5c6d7e" },
-        { name:"British Male", id:"6f4e2d1c3b4a5c7d8e9f0a1b2c3d4e5f" },
-        { name:"ASMR Whisper", id:"8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d" },
-        { name:"Default (none)", id:"" }
-    ];
+    let selectedFile = null;
+    let voiceId = null;
 
-    function buildVoiceGrid() {
-        const grid = document.getElementById('voiceGrid');
-        grid.innerHTML = VOICE_PRESETS.map(v => `
-            <div class="voice-option" onclick="selectVoice('${v.id}', this)" data-id="${v.id}">
-                <div>${v.name}</div>
-                <div class="voice-id-display">${v.id ? v.id.substring(0,12)+'…' : 'default'}</div>
-            </div>
-        `).join('');
-    }
-    buildVoiceGrid();
-
-    function toggleVoiceGrid() {
-        const grid = document.getElementById('voiceGrid');
-        grid.classList.toggle('hidden');
-        const btn = document.querySelector('.collapsible');
-        btn.textContent = grid.classList.contains('hidden') ? '📋 Show presets ▼' : '📋 Hide presets ▲';
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        selectedFile = file;
+        const area = document.getElementById('fileUploadArea');
+        area.classList.add('has-file');
+        document.getElementById('fileUploadText').textContent = '✅ ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+        document.getElementById('fileInfo').style.display = 'block';
+        document.getElementById('fileInfo').textContent = 'Voice will be cloned when you click Generate.';
     }
 
-    function selectVoice(id, el) {
-        document.getElementById('referenceId').value = id;
-        document.querySelectorAll('.voice-option').forEach(o => o.classList.remove('selected'));
-        if (el) el.classList.add('selected');
-    }
+    // Drag & drop support
+    const dropArea = document.getElementById('fileUploadArea');
+    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = 'var(--accent)'; });
+    dropArea.addEventListener('dragleave', () => { dropArea.style.borderColor = 'var(--border)'; });
+    dropArea.addEventListener('drop', e => {
+        e.preventDefault();
+        dropArea.style.borderColor = 'var(--border)';
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('voiceFile').files = dt.files;
+            handleFileSelect({ target: { files: dt.files } });
+        }
+    });
 
     let mediaRecorder, recordedChunks = [], animationId, isRendering = false;
 
     async function startGeneration() {
         if (isRendering) return;
         const topic = document.getElementById('topic').value.trim();
-        const referenceId = document.getElementById('referenceId').value.trim();
-        const model = document.getElementById('modelSelect').value;
+        const presetVoice = document.getElementById('presetVoice').value;
         const format = document.getElementById('formatSelect').value;
+        const exaggeration = parseFloat(document.getElementById('exaggeration').value);
 
         if (!topic) { alert('Enter a topic'); return; }
 
@@ -137,13 +155,18 @@
         updateProgress(0, 'Fetching stock footage...');
 
         try {
+            // 1. Pexels stock footage
             const videoUrls = await fetchPexelsVideos(topic);
             if (videoUrls.length === 0) throw new Error('No videos found.');
-            updateProgress(10, 'Generating voiceover...');
-            const voiceoverBlob = await generateFishAudioSpeech(topic, referenceId, model, format);
-            updateProgress(25, 'Loading clips...');
+            updateProgress(8, 'Uploading voice sample...');
+
+            // 2. Create voice (if sample uploaded) & generate TTS
+            const voiceoverBlob = await generateChatterboxSpeech(topic, presetVoice, format, exaggeration);
+            updateProgress(20, 'Voiceover ready. Loading clips...');
+
+            // 3. Load & render
             const videos = await loadVideoElements(videoUrls);
-            updateProgress(35, 'Rendering...');
+            updateProgress(30, 'Rendering...');
             await startRendering(videos, voiceoverBlob, topic);
         } catch (err) {
             alert('Error: ' + err.message);
@@ -163,6 +186,7 @@
         document.getElementById('statusText').textContent = msg;
     }
 
+    // ── Pexels ──────────────────────────
     async function fetchPexelsVideos(query) {
         const base = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=5&min_width=1920`;
         const resp = await fetch(PROXY_URL + encodeURIComponent(base));
@@ -171,54 +195,70 @@
         const urls = [];
         for (const v of data.videos || []) {
             for (const f of v.video_files) {
-                if (f.width >= 1920 && f.quality === 'hd') {
-                    urls.push(f.link); break;
-                }
+                if (f.width >= 1920 && f.quality === 'hd') { urls.push(f.link); break; }
             }
         }
         return urls.slice(0, 5);
     }
 
-    async function generateFishAudioSpeech(topic, referenceId, model, format) {
-        const text = `[warmly] Welcome to the ultimate guide to ${topic}. [emphasis] Let's uncover everything you need to know.`;
-        const body = {
-            text, format,
-            sample_rate: format === 'opus' ? 48000 : 44100,
-            temperature: 0.7, top_p: 0.7,
-            prosody: { speed: 1, volume: 0, normalize_loudness: true },
-            chunk_length: 300, normalize: true
-        };
-        if (referenceId) body.reference_id = referenceId;
-        if (format === 'mp3') body.mp3_bitrate = 128;
+    // ── Chatterbox-Turbo via DeepInfra ──
+    async function generateChatterboxSpeech(topic, presetVoice, format, exaggeration) {
+        let vid = '';
+        const voiceText = `[warmly] Welcome to the ultimate guide to ${topic}. [emphasis] Let's uncover everything you need to know. [excited] By the end, you'll be an expert.`;
 
-        const resp = await fetch(PROXY_URL + encodeURIComponent('https://api.fish.audio/v1/tts'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'model': model },
-            body: JSON.stringify(body)
-        });
+        // If user uploaded a voice sample, create a cloned voice first
+        if (selectedFile) {
+            updateProgress(10, 'Cloning voice from sample...');
+            const formData = new FormData();
+            formData.append('voice_sample', selectedFile);
 
-        if (!resp.ok) {
-            const errText = await resp.text();
-            throw new Error('Fish Audio: ' + resp.status + ' – ' + errText);
+            try {
+                const voiceResp = await fetch('/api/create-voice', { method: 'POST', body: formData });
+                if (!voiceResp.ok) {
+                    const err = await voiceResp.json();
+                    throw new Error('Voice creation: ' + (err.error || voiceResp.status));
+                }
+                const voiceData = await voiceResp.json();
+                vid = voiceData.voice_id;
+                updateProgress(14, 'Voice cloned! Generating speech...');
+            } catch (err) {
+                console.warn('Voice cloning failed, using default voice:', err.message);
+            }
         }
 
-        const arrayBuffer = await resp.arrayBuffer();
-        if (arrayBuffer.byteLength === 0) throw new Error('Fish Audio returned empty audio.');
+        // If no voice_id from cloning, use preset voice parameter
+        const body = {
+            text: voiceText,
+            format: format,
+            temperature: 0.8,
+            exaggeration: exaggeration,
+            cfg_weight: 0.5,
+        };
+        if (vid) body.voice_id = vid;
+        if (presetVoice && !vid) body.voice = presetVoice;
 
-        // Build the correct MIME type
-        let mime = 'audio/wav';
-        if (format === 'mp3') mime = 'audio/mpeg';
-        return new Blob([arrayBuffer], { type: mime });
+        const resp = await fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error('Chatterbox-Turbo: ' + resp.status + ' – ' + errText);
+        }
+        const arrayBuffer = await resp.arrayBuffer();
+        if (arrayBuffer.byteLength === 0) throw new Error('Empty audio response.');
+        return new Blob([arrayBuffer], { type: format === 'mp3' ? 'audio/mpeg' : 'audio/wav' });
     }
 
+    // ── Load video elements ─────────────
     function loadVideoElements(urls) {
         const container = document.getElementById('videoContainer');
         container.innerHTML = '';
         return Promise.all(urls.map(url => new Promise(resolve => {
             const vid = document.createElement('video');
             vid.src = url; vid.crossOrigin = 'anonymous'; vid.muted = true;
-            vid.playsInline = true; vid.preload = 'auto';
-            vid.style.display = 'none';
+            vid.playsInline = true; vid.preload = 'auto'; vid.style.display = 'none';
             container.appendChild(vid);
             vid.onloadeddata = () => resolve(vid);
             vid.onerror = () => resolve(vid);
@@ -226,29 +266,22 @@
         })));
     }
 
+    // ── Canvas rendering ────────────────
     async function startRendering(videoList, audioBlob, topic) {
         const canvas = document.getElementById('renderCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 1920; canvas.height = 1080;
 
-        // Decode audio
         const audioCtx = new AudioContext();
-        let audioBuffer;
-        try {
-            audioBuffer = await audioCtx.decodeAudioData(await audioBlob.arrayBuffer());
-        } catch (e) {
-            throw new Error('Unable to decode audio data. The Fish Audio response may be invalid. Try WAV format.');
-        }
-
+        const buffer = await audioCtx.decodeAudioData(await audioBlob.arrayBuffer());
         const source = audioCtx.createBufferSource();
-        source.buffer = audioBuffer;
+        source.buffer = buffer;
         const dest = audioCtx.createMediaStreamDestination();
-        source.connect(dest);
-        source.connect(audioCtx.destination);
+        source.connect(dest); source.connect(audioCtx.destination);
         source.start(0);
 
-        const videoStream = canvas.captureStream(30);
-        const combined = new MediaStream([...videoStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+        const stream = canvas.captureStream(30);
+        const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
         recordedChunks = [];
         mediaRecorder = new MediaRecorder(combined, {
             mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm',
@@ -264,7 +297,7 @@
         mediaRecorder.start();
 
         const start = performance.now();
-        const duration = audioBuffer.duration * 1000;
+        const duration = buffer.duration * 1000;
         const numClips = videoList.length;
 
         function draw(now) {
@@ -276,8 +309,7 @@
             if (video.readyState >= 2 && video.videoWidth) {
                 const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
                 const sw = video.videoWidth * scale, sh = video.videoHeight * scale;
-                const sx = (canvas.width - sw) / 2, sy = (canvas.height - sh) / 2;
-                ctx.drawImage(video, sx, sy, sw, sh);
+                ctx.drawImage(video, (canvas.width - sw)/2, (canvas.height - sh)/2, sw, sh);
             } else {
                 ctx.fillStyle = '#111'; ctx.fillRect(0,0,canvas.width,canvas.height);
             }
@@ -296,10 +328,9 @@
                 ctx.restore();
             } else {
                 ctx.font = 'bold 80px "Segoe UI"'; ctx.fillStyle='white'; ctx.strokeStyle='black'; ctx.lineWidth=6;
-                ctx.textAlign='center';
-                ctx.strokeText(topic, canvas.width/2, 120); ctx.fillText(topic, canvas.width/2, 120);
+                ctx.textAlign='center'; ctx.strokeText(topic, canvas.width/2, 120); ctx.fillText(topic, canvas.width/2, 120);
             }
-            updateProgress(35 + Math.floor(progress*60), `Rendering ${Math.floor(progress*100)}%`);
+            updateProgress(30 + Math.floor(progress*65), `Rendering ${Math.floor(progress*100)}%`);
             if (progress < 1) {
                 animationId = requestAnimationFrame(draw);
             } else {
