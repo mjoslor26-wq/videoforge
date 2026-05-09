@@ -5,39 +5,52 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Serve static files (the HTML) from the "public" folder
+// Important: parse JSON bodies for POST requests
+app.use(express.json());
+
+// Serve static HTML
 app.use(express.static('public'));
 
-// Proxy endpoint: /api/proxy?url=ENCODED_URL
+// ──────────────────────────────────────
+// PROXY ENDPOINT – attaches API keys automatically
+// ──────────────────────────────────────
 app.all('/api/proxy', async (req, res) => {
   try {
     const targetUrl = req.query.url;
-    if (!targetUrl) return res.status(400).json({ error: 'Missing url parameter' });
+    if (!targetUrl) {
+      return res.status(400).json({ error: 'Missing url parameter' });
+    }
 
-    // Forward the request with the same method and body
-    const fetchOptions = {
-      method: req.method,
-      headers: { ...req.headers },
-    };
-
-    // Copy authorization header from the original request (sent by the HTML)
-    if (req.headers['authorization']) {
-      fetchOptions.headers['Authorization'] = req.headers['authorization'];
+    // Prepare headers – copy some from original request, but NOT auth (we add our own)
+    const forwardHeaders = {};
+    if (req.headers['content-type']) {
+      forwardHeaders['Content-Type'] = req.headers['content-type'];
     }
     if (req.headers['model']) {
-      fetchOptions.headers['model'] = req.headers['model'];
+      forwardHeaders['model'] = req.headers['model'];
     }
 
-    // If it's a POST, forward the body
+    // 🔒 Automatically attach the correct API key based on the domain
+    if (targetUrl.includes('api.pexels.com')) {
+      forwardHeaders['Authorization'] = process.env.PEXELS_API_KEY;
+    } else if (targetUrl.includes('api.fish.audio')) {
+      forwardHeaders['Authorization'] = `Bearer ${process.env.FISH_AUDIO_KEY}`;
+    }
+
+    const fetchOptions = {
+      method: req.method,
+      headers: forwardHeaders,
+    };
+
+    // Forward body for POST
     if (req.method === 'POST') {
       fetchOptions.body = JSON.stringify(req.body);
-      fetchOptions.headers['Content-Type'] = 'application/json';
     }
 
     const response = await fetch(targetUrl, fetchOptions);
     const contentType = response.headers.get('content-type');
 
-    // Stream the response back to the browser
+    // Relay the response back to the browser
     res.setHeader('Content-Type', contentType);
     response.body.pipe(res);
   } catch (err) {
