@@ -1,13 +1,15 @@
 {
-  "name": "video-forge-render",
-  "version": "1.0.0",
-  "description": "Automated video generator with Fish Audio + Pexels",
+  "name": "video-forge-chatterbox",
+  "version": "2.0.0",
+  "description": "Automated video generator with Chatterbox-Turbo TTS + Pexels",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "node-fetch": "^2.6.12"
+    "node-fetch": "^2.6.12",
+    "multer": "^1.4.5-lts.1",
+    "form-data": "^4.0.0"
   }
 }
