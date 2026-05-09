@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoForge – Online Video Generator</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --gold: #f0b90b;
+            --accent: #6c5ce7;
+            --text: #e8e8f0;
+            --text2: #b0b0c0;
+            --border: #2a2a3a;
+            --radius: 14px;
+            --font: 'Segoe UI', system-ui, sans-serif;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:var(--font); padding:20px; display:flex; justify-content:center; }
+        .app { max-width:900px; width:100%; }
+        .card {
+            background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+            padding:28px 30px; margin-bottom:24px; box-shadow:0 20px 50px rgba(0,0,0,0.6);
+        }
+        h1 { font-size:2.4rem; background:linear-gradient(135deg, var(--gold), #f7dc6f); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:6px; }
+        .sub { color:var(--text2); margin-bottom:20px; }
+        .input-group { margin:16px 0; }
+        label { display:block; margin-bottom:6px; font-weight:600; font-size:0.9rem; color:var(--text2); }
+        input, select {
+            width:100%; padding:14px 16px; background:#1a1a2e; border:2px solid var(--border);
+            border-radius:10px; color:white; font-size:1rem; outline:none; transition:0.2s;
+        }
+        input:focus, select:focus { border-color:var(--accent); }
+        .row { display:flex; gap:16px; flex-wrap:wrap; }
+        .row > * { flex:1; }
+        button {
+            background:linear-gradient(135deg, var(--gold), #f7dc6f); color:#1a1a00;
+            border:none; border-radius:10px; padding:16px 32px; font-weight:700; font-size:1rem;
+            cursor:pointer; transition:0.2s; width:100%; margin-top:10px;
+        }
+        button:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(240,185,11,0.3); }
+        button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+        .progress { width:100%; height:10px; background:#2a2a3e; border-radius:10px; margin-top:12px; overflow:hidden; }
+        .progress-bar { height:100%; background:var(--gold); width:0%; transition:width 0.1s; }
+        .status { font-size:0.9rem; color:var(--text2); margin-top:8px; }
+        .note { font-size:0.8rem; color:var(--text2); margin-top:12px; }
+        a { color:var(--accent); }
+        .voice-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap:8px; margin-top:8px; }
+        .voice-option {
+            background:#1a1a2e; padding:10px 6px; border-radius:8px; text-align:center;
+            font-size:0.78rem; cursor:pointer; border:2px solid transparent; transition:0.2s;
+        }
+        .voice-option:hover { border-color:#6c5ce7; }
+        .voice-option.selected { border-color:var(--accent); background:#2a2a4e; }
+        .voice-id-display { font-size:0.65rem; color:var(--text3); word-break:break-all; margin-top:4px; }
+        .collapsible { cursor:pointer; color:var(--accent); font-size:0.85rem; margin-top:8px; display:inline-block; }
+        .hidden { display:none; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="card">
+        <h1>🎬 VideoForge</h1>
+        <p class="sub">Turn any topic into a real, downloadable video — with <strong>Fish Audio</strong> TTS & <strong>Pexels</strong> footage.</p>
+        <p class="note">API keys are stored securely on the server. No local proxy needed.</p>
+
+        <div class="input-group">
+            <label>🎯 Video Topic / Title</label>
+            <input type="text" id="topic" value="The Science of Lucid Dreaming" placeholder="e.g. How AI is changing finance">
+        </div>
+
+        <div class="input-group">
+            <label>🎤 Fish Audio Voice (Reference ID)</label>
+            <input type="text" id="referenceId" placeholder="Leave empty for default voice">
+            <span class="collapsible" onclick="toggleVoiceGrid()">📋 Show built-in voice presets ▼</span>
+        </div>
+        <div id="voiceGrid" class="voice-grid hidden"></div>
+
+        <div class="input-group">
+            <label>⚙️ TTS Model</label>
+            <select id="modelSelect">
+                <option value="s2-pro" selected>s2-pro (recommended)</option>
+                <option value="s2">s2</option>
+                <option value="s1">s1</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>🎵 Audio Format</label>
+            <select id="formatSelect">
+                <option value="wav" selected>WAV</option>
+                <option value="mp3">MP3</option>
+                <option value="opus">Opus</option>
+            </select>
+        </div>
+
+        <button id="generateBtn" onclick="startGeneration()">⚡ Generate & Download Video</button>
+
+        <div id="progressArea" style="display:none;">
+            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="status" id="statusText">Preparing...</div>
+        </div>
+        <div id="downloadArea" style="display:none; margin-top:16px; text-align:center;">
+            <a id="downloadLink" href="#" download="final_video.webm" style="color:var(--gold); font-weight:700;">⬇️ Download Your Video</a>
+        </div>
+    </div>
+</div>
+
+<canvas id="renderCanvas" width="1920" height="1080" style="display:none;"></canvas>
+<div id="videoContainer" style="display:none;"></div>
+
+<script>
+    // The proxy endpoint (same origin — no CORS)
+    const PROXY_URL = '/api/proxy?url=';
+
+    const VOICE_PRESETS = [
+        { name:"E-Girl", id:"8ef4a238714b45718ce04243307c57a7" },
+        { name:"Energetic Male", id:"7f92f8afb8ec43bf81429cc1c9199cb1" },
+        { name:"Calm Narrator", id:"a3b5f4a1c1c047b8b7d9e7f3d6a2e1c0" },
+        { name:"Deep Male", id:"9d6c4e2a1f4b47c8a3d5e7f9b1c2d3e4" },
+        { name:"Warm Female", id:"2b8c6d4e5f3a4b7c9d1e2f3a4b5c6d7e" },
+        { name:"British Male", id:"6f4e2d1c3b4a5c7d8e9f0a1b2c3d4e5f" },
+        { name:"ASMR Whisper", id:"8a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d" },
+        { name:"Default (none)", id:"" }
+    ];
+
+    function buildVoiceGrid() {
+        const grid = document.getElementById('voiceGrid');
+        grid.innerHTML = VOICE_PRESETS.map(v => `
+            <div class="voice-option" onclick="selectVoice('${v.id}', this)" data-id="${v.id}">
+                <div>${v.name}</div>
+                <div class="voice-id-display">${v.id ? v.id.substring(0,12)+'…' : 'default'}</div>
+            </div>
+        `).join('');
+    }
+    buildVoiceGrid();
+
+    function toggleVoiceGrid() {
+        const grid = document.getElementById('voiceGrid');
+        grid.classList.toggle('hidden');
+        const btn = document.querySelector('.collapsible');
+        btn.textContent = grid.classList.contains('hidden') ? '📋 Show presets ▼' : '📋 Hide presets ▲';
+    }
+
+    function selectVoice(id, el) {
+        document.getElementById('referenceId').value = id;
+        document.querySelectorAll('.voice-option').forEach(o => o.classList.remove('selected'));
+        if (el) el.classList.add('selected');
+    }
+
+    let mediaRecorder, recordedChunks = [], animationId, isRendering = false;
+
+    async function startGeneration() {
+        if (isRendering) return;
+        const topic = document.getElementById('topic').value.trim();
+        const referenceId = document.getElementById('referenceId').value.trim();
+        const model = document.getElementById('modelSelect').value;
+        const format = document.getElementById('formatSelect').value;
+
+        if (!topic) { alert('Enter a topic'); return; }
+
+        isRendering = true;
+        document.getElementById('generateBtn').disabled = true;
+        document.getElementById('progressArea').style.display = 'block';
+        document.getElementById('downloadArea').style.display = 'none';
+        updateProgress(0, 'Fetching stock footage...');
+
+        try {
+            const videoUrls = await fetchPexelsVideos(topic);
+            if (videoUrls.length === 0) throw new Error('No videos found.');
+            updateProgress(10, 'Generating voiceover...');
+            const voiceoverBlob = await generateFishAudioSpeech(topic, referenceId, model, format);
+            updateProgress(25, 'Loading clips...');
+            const videos = await loadVideoElements(videoUrls);
+            updateProgress(35, 'Rendering...');
+            await startRendering(videos, voiceoverBlob, topic);
+        } catch (err) {
+            alert('Error: ' + err.message);
+            console.error(err);
+            resetUI();
+        }
+    }
+
+    function resetUI() {
+        isRendering = false;
+        document.getElementById('generateBtn').disabled = false;
+        document.getElementById('progressArea').style.display = 'none';
+    }
+
+    function updateProgress(percent, msg) {
+        document.getElementById('progressBar').style.width = percent + '%';
+        document.getElementById('statusText').textContent = msg;
+    }
+
+    async function fetchPexelsVideos(query) {
+        // The server will forward this request to Pexels, using the server-side env var.
+        const base = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=5&min_width=1920`;
+        const resp = await fetch(PROXY_URL + encodeURIComponent(base));
+        if (!resp.ok) throw new Error('Pexels: ' + resp.status);
+        const data = await resp.json();
+        const urls = [];
+        for (const v of data.videos || []) {
+            for (const f of v.video_files) {
+                if (f.width >= 1920 && f.quality === 'hd') {
+                    urls.push(f.link); break;
+                }
+            }
+        }
+        return urls.slice(0, 5);
+    }
+
+    async function generateFishAudioSpeech(topic, referenceId, model, format) {
+        const text = `[warmly] Welcome to the ultimate guide to ${topic}. [emphasis] Let's uncover everything.`;
+        const body = {
+            text, format,
+            sample_rate: format === 'opus' ? 48000 : 44100,
+            temperature: 0.7, top_p: 0.7,
+            prosody: { speed: 1, volume: 0, normalize_loudness: true },
+            chunk_length: 300, normalize: true
+        };
+        if (referenceId) body.reference_id = referenceId;
+        if (format === 'mp3') body.mp3_bitrate = 128;
+
+        const resp = await fetch(PROXY_URL + encodeURIComponent('https://api.fish.audio/v1/tts'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'model': model
+            },
+            body: JSON.stringify(body)
+        });
+        if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error('Fish Audio: ' + resp.status + ' – ' + errText);
+        }
+        const arrayBuffer = await resp.arrayBuffer();
+        const mime = format === 'mp3' ? 'audio/mpeg' : format === 'opus' ? 'audio/ogg' : 'audio/wav';
+        return new Blob([arrayBuffer], { type: mime });
+    }
+
+    function loadVideoElements(urls) {
+        const container = document.getElementById('videoContainer');
+        container.innerHTML = '';
+        return Promise.all(urls.map(url => new Promise(resolve => {
+            const vid = document.createElement('video');
+            vid.src = url; vid.crossOrigin = 'anonymous'; vid.muted = true;
+            vid.playsInline = true; vid.preload = 'auto';
+            vid.style.display = 'none';
+            container.appendChild(vid);
+            vid.onloadeddata = () => resolve(vid);
+            vid.onerror = () => resolve(vid);
+            setTimeout(() => resolve(vid), 8000);
+        })));
+    }
+
+    async function startRendering(videoList, audioBlob, topic) {
+        const canvas = document.getElementById('renderCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 1920; canvas.height = 1080;
+
+        const audioCtx = new AudioContext();
+        const buffer = await audioCtx.decodeAudioData(await audioBlob.arrayBuffer());
+        const source = audioCtx.createBufferSource();
+        source.buffer = buffer;
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest); source.connect(audioCtx.destination);
+        source.start(0);
+
+        const stream = canvas.captureStream(30);
+        const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+        recordedChunks = [];
+        mediaRecorder = new MediaRecorder(combined, {
+            mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm',
+            videoBitsPerSecond: 8000000
+        });
+        mediaRecorder.ondataavailable = e => { if(e.data.size) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            document.getElementById('downloadLink').href = URL.createObjectURL(blob);
+            document.getElementById('downloadArea').style.display = 'block';
+            resetUI(); updateProgress(100, 'Done!');
+        };
+        mediaRecorder.start();
+
+        const start = performance.now();
+        const duration = buffer.duration * 1000;
+        const numClips = videoList.length;
+
+        function draw(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const clipDuration = duration / numClips;
+            const idx = Math.min(Math.floor(elapsed / clipDuration), numClips - 1);
+            const video = videoList[idx];
+            if (video.readyState >= 2 && video.videoWidth) {
+                const scale = Math.max(canvas.width / video.videoWidth, canvas.height / video.videoHeight);
+                const sw = video.videoWidth * scale, sh = video.videoHeight * scale;
+                const sx = (canvas.width - sw) / 2, sy = (canvas.height - sh) / 2;
+                ctx.drawImage(video, sx, sy, sw, sh);
+            } else {
+                ctx.fillStyle = '#111'; ctx.fillRect(0,0,canvas.width,canvas.height);
+            }
+            if (idx < numClips - 1) {
+                const cp = (elapsed - idx * clipDuration) / clipDuration;
+                if (cp > 0.8) {
+                    ctx.fillStyle = `rgba(0,0,0,${(cp-0.8)/0.2})`;
+                    ctx.fillRect(0,0,canvas.width,canvas.height);
+                }
+            }
+            if (progress < 0.1) {
+                const s = progress / 0.1;
+                ctx.save(); ctx.translate(canvas.width/2, canvas.height/2); ctx.scale(s,s);
+                ctx.font = 'bold 80px "Segoe UI"'; ctx.fillStyle='white'; ctx.strokeStyle='black'; ctx.lineWidth=6;
+                ctx.textAlign='center'; ctx.strokeText(topic,0,0); ctx.fillText(topic,0,0);
+                ctx.restore();
+            } else {
+                ctx.font = 'bold 80px "Segoe UI"'; ctx.fillStyle='white'; ctx.strokeStyle='black'; ctx.lineWidth=6;
+                ctx.textAlign='center';
+                ctx.strokeText(topic, canvas.width/2, 120); ctx.fillText(topic, canvas.width/2, 120);
+            }
+            updateProgress(35 + Math.floor(progress*60), `Rendering ${Math.floor(progress*100)}%`);
+            if (progress < 1) {
+                animationId = requestAnimationFrame(draw);
+            } else {
+                setTimeout(() => { mediaRecorder.stop(); source.stop(); audioCtx.close(); }, 500);
+            }
+        }
+        animationId = requestAnimationFrame(draw);
+    }
+</script>
+</body>
+</html>
