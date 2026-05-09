@@ -32,15 +32,13 @@
             border-radius:10px; color:white; font-size:1rem; outline:none; transition:0.2s;
         }
         input:focus, select:focus { border-color:var(--accent); }
-        .row { display:flex; gap:16px; flex-wrap:wrap; }
-        .row > * { flex:1; }
         button {
             background:linear-gradient(135deg, var(--gold), #f7dc6f); color:#1a1a00;
             border:none; border-radius:10px; padding:16px 32px; font-weight:700; font-size:1rem;
             cursor:pointer; transition:0.2s; width:100%; margin-top:10px;
         }
         button:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(240,185,11,0.3); }
-        button:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+        button:disabled { opacity:0.6; cursor:not-allowed; }
         .progress { width:100%; height:10px; background:#2a2a3e; border-radius:10px; margin-top:12px; overflow:hidden; }
         .progress-bar { height:100%; background:var(--gold); width:0%; transition:width 0.1s; }
         .status { font-size:0.9rem; color:var(--text2); margin-top:8px; }
@@ -62,8 +60,8 @@
 <div class="app">
     <div class="card">
         <h1>🎬 VideoForge</h1>
-        <p class="sub">Turn any topic into a real, downloadable video — with <strong>Fish Audio</strong> TTS & <strong>Pexels</strong> footage.</p>
-        <p class="note">API keys are stored securely on the server. No local proxy needed.</p>
+        <p class="sub">Turn any topic into a real, downloadable video — using <strong>Fish Audio</strong> + <strong>Pexels</strong>.</p>
+        <p class="note">API keys are securely stored on the server — you never need to enter them.</p>
 
         <div class="input-group">
             <label>🎯 Video Topic / Title</label>
@@ -110,9 +108,7 @@
 <div id="videoContainer" style="display:none;"></div>
 
 <script>
-    // The proxy endpoint (same origin — no CORS)
     const PROXY_URL = '/api/proxy?url=';
-
     const VOICE_PRESETS = [
         { name:"E-Girl", id:"8ef4a238714b45718ce04243307c57a7" },
         { name:"Energetic Male", id:"7f92f8afb8ec43bf81429cc1c9199cb1" },
@@ -193,7 +189,6 @@
     }
 
     async function fetchPexelsVideos(query) {
-        // The server will forward this request to Pexels, using the server-side env var.
         const base = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=5&min_width=1920`;
         const resp = await fetch(PROXY_URL + encodeURIComponent(base));
         if (!resp.ok) throw new Error('Pexels: ' + resp.status);
@@ -223,10 +218,7 @@
 
         const resp = await fetch(PROXY_URL + encodeURIComponent('https://api.fish.audio/v1/tts'), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'model': model
-            },
+            headers: { 'Content-Type': 'application/json', 'model': model },
             body: JSON.stringify(body)
         });
         if (!resp.ok) {
